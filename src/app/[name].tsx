@@ -1,20 +1,14 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import exercises from "../../assets/data/exercises.json";
+import { useState, FC } from "react";
 import { Stack } from "expo-router";
-import { useState } from "react";
 import { gql } from "graphql-request";
 import { useQuery } from "@tanstack/react-query";
+import { ExerciseData, ExerciseQueryVariables } from "../modals";
+
 import graphqlClient from "../graphqlClient";
 import NewSetInput from "../components/NewSetInput";
 import SetsList from "../components/SetsList";
-import ProgressGraph from "../components/ProgressGraph";
 
 const exerciseQuery = gql`
   query exercises($name: String) {
@@ -27,14 +21,21 @@ const exerciseQuery = gql`
   }
 `;
 
-export default function ExerciseDetailsScreen() {
-  const { name } = useLocalSearchParams();
-  const { data, isLoading, error } = useQuery({
+type ExerciseDetailsScreenProps = {};
+
+export const ExerciseDetailsScreen: FC<ExerciseDetailsScreenProps> = () => {
+  const { name } = useLocalSearchParams<{ name: string }>();
+  const { data, isLoading, error } = useQuery<ExerciseData, Error>({
     queryKey: ["exercises", name],
-    queryFn: () => graphqlClient.request(exerciseQuery, { name }),
+    queryFn: () =>
+      graphqlClient.request<ExerciseData, ExerciseQueryVariables>(
+        exerciseQuery,
+        { name }
+      ),
   });
 
-  const [isInstructionExpanded, setIsInstructionExpanded] = useState(false);
+  const [isInstructionExpanded, setIsInstructionExpanded] =
+    useState<boolean>(false);
 
   if (isLoading) {
     return <ActivityIndicator />;
@@ -44,7 +45,7 @@ export default function ExerciseDetailsScreen() {
     return <Text>Failed to fetch data</Text>;
   }
 
-  const exercise = data.exercises[0];
+  const exercise = data?.exercises[0];
 
   if (!exercise) {
     return <Text>Exercise not found</Text>;
@@ -88,7 +89,7 @@ export default function ExerciseDetailsScreen() {
       />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -120,3 +121,5 @@ const styles = StyleSheet.create({
     color: "gray",
   },
 });
+
+export default ExerciseDetailsScreen;

@@ -1,14 +1,14 @@
-type Exercise = {
+export type Exercise = {
   name: string;
   muscle: string;
   instructions: string;
   equipment: string;
 };
 
-type ExerciseData = {
+export type ExerciseData = {
   exercises: Exercise[];
 };
 
-type ExerciseQueryVariables = {
+export type ExerciseQueryVariables = {
   name: string;
 };
